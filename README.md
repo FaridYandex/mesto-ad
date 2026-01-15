@@ -14,4 +14,3 @@ npm run build
 # публикация dist на GitHub Pages
 npm run deploy
 ```
-
