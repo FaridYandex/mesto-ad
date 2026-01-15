@@ -29,7 +29,6 @@ export const createCardElement = (
   cardElement.querySelector(".card__title").textContent = data.name;
   likeCount.textContent = data.likes.length;
 
-  // Проверка на наличие лайка текущего пользователя
   if (data.likes.some((user) => user._id === userId)) {
     likeButton.classList.add("card__like-button_is-active");
   }

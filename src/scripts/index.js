@@ -40,6 +40,16 @@ const avatarInput = avatarForm.querySelector(".popup__input")
 const confirmModalWindow = document.querySelector(".popup_type_remove-card")
 const confirmForm = confirmModalWindow.querySelector(".popup__form")
 
+const statsModalWindow = document.querySelector(".popup_type_info")
+const statsModalTitle = statsModalWindow.querySelector(".popup__title")
+const statsModalInfoList = statsModalWindow.querySelector(".popup__info")
+const statsModalUsersTitle = statsModalWindow.querySelector(".popup__text")
+const statsModalUsersList = statsModalWindow.querySelector(".popup__list")
+const logoElement = document.querySelector(".logo")
+
+const statTemplate = document.querySelector("#popup-info-definition-template").content
+const userTemplate = document.querySelector("#popup-info-user-preview-template").content
+
 let currentUserId
 let cardToDelete = null
 let cardIdToDelete = null
@@ -51,8 +61,17 @@ const handlePreviewPicture = ({ name, link }) => {
   openModalWindow(imageModalWindow)
 }
 
+const renderLoading = (isLoading, button, buttonText = 'Сохранить', loadingText = 'Сохранение...') => {
+  if (isLoading) {
+    button.textContent = loadingText
+  } else {
+    button.textContent = buttonText
+  }
+}
+
 const handleProfileFormSubmit = (evt) => {
   evt.preventDefault()
+  renderLoading(true, evt.submitter)
   setUserInfo({
     name: profileTitleInput.value.trim(),
     about: profileDescriptionInput.value.trim(),
@@ -65,10 +84,14 @@ const handleProfileFormSubmit = (evt) => {
     .catch((err) => {
       console.log(err)
     })
+    .finally(() => {
+      renderLoading(false, evt.submitter)
+    })
 }
 
 const handleAvatarFormSubmit = (evt) => {
   evt.preventDefault()
+  renderLoading(true, evt.submitter)
   setUserAvatar({
     avatar: avatarInput.value.trim(),
   })
@@ -80,6 +103,9 @@ const handleAvatarFormSubmit = (evt) => {
     })
     .catch((err) => {
       console.log(err)
+    })
+    .finally(() => {
+      renderLoading(false, evt.submitter)
     })
 }
 
@@ -94,6 +120,7 @@ confirmForm.addEventListener("submit", (evt) => {
 
   if (!cardToDelete || !cardIdToDelete) return
 
+  renderLoading(true, evt.submitter, 'Да', 'Удаление...')
   deleteCardAPI(cardIdToDelete)
     .then(() => {
       deleteCard(cardToDelete)
@@ -103,6 +130,9 @@ confirmForm.addEventListener("submit", (evt) => {
     })
     .catch((err) => {
       console.log(err)
+    })
+    .finally(() => {
+      renderLoading(false, evt.submitter, 'Да')
     })
 })
 
@@ -123,6 +153,7 @@ const handleLikeCard = (cardElement, cardId) => {
 
 const handleCardFormSubmit = (evt) => {
   evt.preventDefault()
+  renderLoading(true, evt.submitter, 'Создать', 'Создание...')
   addNewCard({
     name: cardNameInput.value.trim(),
     link: cardLinkInput.value.trim(),
@@ -146,6 +177,9 @@ const handleCardFormSubmit = (evt) => {
     .catch((err) => {
       console.log(err)
     })
+    .finally(() => {
+      renderLoading(false, evt.submitter, 'Создать')
+    })
 }
 
 const validationSettings = {
@@ -157,7 +191,73 @@ const validationSettings = {
   errorClass: "popup__error_visible",
 }
 
+const formatDate = (date) =>
+  date.toLocaleDateString("ru-RU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
+const createInfoString = (term, description) => {
+  const element = statTemplate.querySelector(".popup__info-item").cloneNode(true)
+  element.querySelector(".popup__info-term").textContent = term
+  element.querySelector(".popup__info-description").textContent = description
+  return element
+}
+
+const createUserString = (userName) => {
+  const element = userTemplate.querySelector(".popup__list-item").cloneNode(true)
+  element.textContent = userName
+  return element
+}
+
+const handleLogoClick = () => {
+  getCardList()
+    .then((cards) => {
+      statsModalInfoList.innerHTML = ""
+      statsModalUsersList.innerHTML = ""
+      
+      statsModalTitle.textContent = "Статистика пользователей"
+      statsModalUsersTitle.textContent = "Все пользователи:"
+
+      const totalCards = cards.length
+      const firstDate = cards.length > 0 ? formatDate(new Date(cards[cards.length - 1].createdAt)) : "-"
+      const lastDate = cards.length > 0 ? formatDate(new Date(cards[0].createdAt)) : "-"
+      
+      const userCounts = {}
+      const uniqueUsers = new Map()
+
+      cards.forEach(card => {
+        const userId = card.owner._id
+        userCounts[userId] = (userCounts[userId] || 0) + 1
+        if (!uniqueUsers.has(userId)) {
+          uniqueUsers.set(userId, card.owner.name)
+        }
+      })
+
+      const totalUsers = uniqueUsers.size
+      const maxCards = Math.max(0, ...Object.values(userCounts))
+
+      statsModalInfoList.append(createInfoString("Всего карточек:", totalCards))
+      statsModalInfoList.append(createInfoString("Первая создана:", firstDate))
+      statsModalInfoList.append(createInfoString("Последняя создана:", lastDate))
+      statsModalInfoList.append(createInfoString("Всего пользователей:", totalUsers))
+      statsModalInfoList.append(createInfoString("Максимум карточек от одного:", maxCards))
+
+      uniqueUsers.forEach((name) => {
+        statsModalUsersList.append(createUserString(name))
+      })
+
+      openModalWindow(statsModalWindow)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+}
+
 enableValidation(validationSettings)
+
+logoElement.addEventListener("click", handleLogoClick)
 
 profileForm.addEventListener("submit", handleProfileFormSubmit)
 cardForm.addEventListener("submit", handleCardFormSubmit)
