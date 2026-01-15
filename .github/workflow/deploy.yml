@@ -32,7 +32,7 @@ jobs:
           personal_token: ${{ secrets.PUBLIC_PAGES_TOKEN }}
           external_repository: ${{ secrets.PUBLIC_PAGES_REPO }}
           publish_dir: ./dist
-          publish_branch: ${{ secrets.PUBLIC_PAGES_BRANCH || 'main' }}
+          publish_branch: ${{ 'main' }}
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
           commit_message: "deploy: update build"
