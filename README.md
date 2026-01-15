@@ -1,5 +1,3 @@
-Стартовый набор для выполнения проектной работы Место
-
-Для запуска приложения необходимо использовать live-server
-![изображение live-server](image.png)
-Live-server является расширением VSCode
+Репозиторий (приватный): https://github.com/FaridYandex/mesto-ad
+Продакшион: https://github.com/FaridYandex/mesto-production
+Страница: https://faridyandex.github.io/mesto-ad/
