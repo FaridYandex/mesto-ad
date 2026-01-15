@@ -8,6 +8,7 @@ import {
   setUserAvatar,
   addNewCard,
   deleteCardAPI,
+  changeLikeCardStatus,
 } from "./components/api.js"
 
 const placesWrap = document.querySelector(".places__list")
@@ -105,6 +106,21 @@ confirmForm.addEventListener("submit", (evt) => {
     })
 })
 
+const handleLikeCard = (cardElement, cardId) => {
+  const likeButton = cardElement.querySelector(".card__like-button")
+  const likeCount = cardElement.querySelector(".card__like-count")
+  const isLiked = likeButton.classList.contains("card__like-button_is-active")
+
+  changeLikeCardStatus(cardId, isLiked)
+    .then((cardData) => {
+      likeButton.classList.toggle("card__like-button_is-active")
+      likeCount.textContent = cardData.likes.length
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+}
+
 const handleCardFormSubmit = (evt) => {
   evt.preventDefault()
   addNewCard({
@@ -118,7 +134,7 @@ const handleCardFormSubmit = (evt) => {
           currentUserId,
           {
             onPreviewPicture: handlePreviewPicture,
-            onLikeIcon: likeCard,
+            onLikeIcon: handleLikeCard,
             onDeleteCard: handleDeleteCard,
           }
         )
@@ -182,7 +198,7 @@ Promise.all([getCardList(), getUserInfo()])
       placesWrap.append(
         createCardElement(data, currentUserId, {
           onPreviewPicture: handlePreviewPicture,
-          onLikeIcon: likeCard,
+          onLikeIcon: handleLikeCard,
           onDeleteCard: handleDeleteCard,
         })
       )

@@ -1,62 +1,52 @@
-const config = {
-  baseUrl: "https://mesto.nomoreparties.co/v1/apf-cohort-202",
-  headers: {
-    authorization: "52c53acc-ee6c-4a85-b67f-14afcce5cebe",
-    "Content-Type": "application/json",
-  },
-}
+export const likeCard = (likeButton) => {
+  likeButton.classList.toggle("card__like-button_is-active");
+};
 
-const getResponseData = (res) => {
-  return res.ok ? res.json() : Promise.reject(`Ошибка: ${res.status}`)
-}
+export const deleteCard = (cardElement) => {
+  cardElement.remove();
+};
 
-export const getUserInfo = () => {
-  return fetch(`${config.baseUrl}/users/me`, {
-    headers: config.headers,
-  }).then(getResponseData)
-}
+const getTemplate = () => {
+  return document
+    .getElementById("card-template")
+    .content.querySelector(".card")
+    .cloneNode(true);
+};
 
-export const getCardList = () => {
-  return fetch(`${config.baseUrl}/cards`, {
-    headers: config.headers,
-  }).then(getResponseData)
-}
+export const createCardElement = (
+  data,
+  userId,
+  { onPreviewPicture, onLikeIcon, onDeleteCard }
+) => {
+  const cardElement = getTemplate();
+  const likeButton = cardElement.querySelector(".card__like-button");
+  const likeCount = cardElement.querySelector(".card__like-count");
+  const deleteButton = cardElement.querySelector(".card__control-button_type_delete");
+  const cardImage = cardElement.querySelector(".card__image");
 
-export const setUserInfo = ({ name, about }) => {
-  return fetch(`${config.baseUrl}/users/me`, {
-    method: "PATCH",
-    headers: config.headers,
-    body: JSON.stringify({
-      name,
-      about,
-    }),
-  }).then(getResponseData)
-}
+  cardImage.src = data.link;
+  cardImage.alt = data.name;
+  cardElement.querySelector(".card__title").textContent = data.name;
+  likeCount.textContent = data.likes.length;
 
-export const setUserAvatar = ({ avatar }) => {
-  return fetch(`${config.baseUrl}/users/me/avatar`, {
-    method: "PATCH",
-    headers: config.headers,
-    body: JSON.stringify({
-      avatar,
-    }),
-  }).then(getResponseData)
-}
+  // Проверка на наличие лайка текущего пользователя
+  if (data.likes.some((user) => user._id === userId)) {
+    likeButton.classList.add("card__like-button_is-active");
+  }
 
-export const addNewCard = ({ name, link }) => {
-  return fetch(`${config.baseUrl}/cards`, {
-    method: "POST",
-    headers: config.headers,
-    body: JSON.stringify({
-      name,
-      link,
-    }),
-  }).then(getResponseData)
-}
+  if (userId !== data.owner._id) {
+    deleteButton.remove();
+  } else if (onDeleteCard) {
+    deleteButton.addEventListener("click", () => onDeleteCard(cardElement, data._id));
+  }
 
-export const deleteCardAPI = (cardId) => {
-  return fetch(`${config.baseUrl}/cards/${cardId}`, {
-    method: "DELETE",
-    headers: config.headers,
-  }).then(getResponseData)
-}
+  if (onLikeIcon) {
+    likeButton.addEventListener("click", () => onLikeIcon(cardElement, data._id));
+  }
+
+  if (onPreviewPicture) {
+    cardImage.addEventListener("click", () => onPreviewPicture({name: data.name, link: data.link}));
+  }
+
+  return cardElement;
+};

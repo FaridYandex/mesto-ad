@@ -1,7 +1,7 @@
 const config = {
   baseUrl: "https://mesto.nomoreparties.co/v1/apf-cohort-202",
   headers: {
-    authorization: "75057989-a077-4109-a984-98014fa65757",
+    authorization: "52c53acc-ee6c-4a85-b67f-14afcce5cebe",
     "Content-Type": "application/json",
   },
 }
@@ -57,6 +57,13 @@ export const addNewCard = ({ name, link }) => {
 export const deleteCardAPI = (cardId) => {
   return fetch(`${config.baseUrl}/cards/${cardId}`, {
     method: "DELETE",
+    headers: config.headers,
+  }).then(getResponseData)
+}
+
+export const changeLikeCardStatus = (cardId, isLiked) => {
+  return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+    method: isLiked ? "DELETE" : "PUT",
     headers: config.headers,
   }).then(getResponseData)
 }
