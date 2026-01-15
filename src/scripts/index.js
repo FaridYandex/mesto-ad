@@ -36,7 +36,12 @@ const avatarFormModalWindow = document.querySelector(".popup_type_edit-avatar")
 const avatarForm = avatarFormModalWindow.querySelector(".popup__form")
 const avatarInput = avatarForm.querySelector(".popup__input")
 
+const confirmModalWindow = document.querySelector(".popup_type_remove-card")
+const confirmForm = confirmModalWindow.querySelector(".popup__form")
+
 let currentUserId
+let cardToDelete = null
+let cardIdToDelete = null
 
 const handlePreviewPicture = ({ name, link }) => {
   imageElement.src = link
@@ -78,14 +83,27 @@ const handleAvatarFormSubmit = (evt) => {
 }
 
 const handleDeleteCard = (cardElement, cardId) => {
-  deleteCardAPI(cardId)
+  cardToDelete = cardElement
+  cardIdToDelete = cardId
+  openModalWindow(confirmModalWindow)
+}
+
+confirmForm.addEventListener("submit", (evt) => {
+  evt.preventDefault()
+
+  if (!cardToDelete || !cardIdToDelete) return
+
+  deleteCardAPI(cardIdToDelete)
     .then(() => {
-      deleteCard(cardElement)
+      deleteCard(cardToDelete)
+      closeModalWindow(confirmModalWindow)
+      cardToDelete = null
+      cardIdToDelete = null
     })
     .catch((err) => {
       console.log(err)
     })
-}
+})
 
 const handleCardFormSubmit = (evt) => {
   evt.preventDefault()
